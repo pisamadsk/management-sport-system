@@ -1,0 +1,140 @@
+{% extends 'base.html' %} {% block content %}
+<body>
+  <!-- Sidebar -->
+  {% include '_partials/sidebar.html'%}
+
+  <!-- Header main -->
+  {% include '_partials/header_main.html'%}
+
+  <div class="main main-app p-3 p-lg-4">
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <div>
+        <h4 class="main-title mb-0">Facility Booking</h4>
+      </div>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="row">
+        <div class="col-12">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}" role="alert">
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row g-3">
+      <!-- Booking Form -->
+      <div class="col-xl-4 col-lg-5">
+        <div class="card card-one">
+          <div class="card-header">
+            <h6 class="card-title">Book a Facility</h6>
+          </div>
+          <div class="card-body">
+            <form method="POST" action="">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="facility" class="form-label">Select Discipline/Facility</label>
+                    <select class="form-select" id="facility" name="facility" required>
+                        <option value="" selected disabled>Choose...</option>
+                        {% for facility in facilities %}
+                        <option value="{{ facility.id }}">{{ facility.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="date_time" class="form-label">Date & Time</label>
+                    <input type="datetime-local" class="form-control" id="date_time" name="date_time" required>
+                </div>
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">Book Now</button>
+                </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bookings List -->
+      <div class="col-xl-8 col-lg-7">
+        <div class="card card-one">
+          <div class="card-header">
+            <h6 class="card-title">Upcoming Bookings</h6>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>Facility</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>User</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in bookings %}
+                        <tr>
+                            <td><span class="fw-medium">{{ booking.facility.name }}</span></td>
+                            <td>{{ booking.start_time|date:"Y-m-d" }}</td>
+                            <td>{{ booking.start_time|time:"H:i" }} - {{ booking.end_time|time:"H:i" }}</td>
+                            <td>{{ booking.user.username }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-4">No upcoming bookings found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Calendar Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card card-one">
+                <div class="card-header">
+                    <h6 class="card-title">Facility Booking Calendar</h6>
+                </div>
+                <div class="card-body">
+                    <div id="calendar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var calendarEl = document.getElementById('calendar');
+            if (calendarEl) {
+                var calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'dayGridMonth',
+                    headerToolbar: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                    },
+                    events: "{% url 'api_bookings' %}",
+                    eventTimeFormat: { 
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        meridiem: false
+                    },
+                    height: 650
+                });
+                calendar.render();
+            }
+        });
+    </script>
+
+    {% include '_partials/inner_footer.html'%}
+  </div>
+  <!-- main -->
+</body>
+{% endblock content %}
